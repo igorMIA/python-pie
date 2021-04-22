@@ -1,5 +1,6 @@
 # python-pie
 
+[![Build Status](https://github.com/igorMIA/python-pie/actions/workflows/tests.yaml/badge.svg)](https://github.com/igorMIA/python-pie/actions/workflows/tests.yaml)
 [![PyPI version](https://badge.fury.io/py/python-pie.svg)](https://badge.fury.io/py/python-pie)
 
 Python-pie reads key-value pairs from a `.env` file and can set them as environment
