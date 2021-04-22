@@ -62,6 +62,8 @@ log_file_path: fffff"/file/path/{log_file_path or 'tmp.log'}"
 log_rotate_count: 1
 """
 
+TEST_CASE_8_INPUT = 'log_file_path: f"/file/path/{log_file_path or \'tmp.log\'}"'
+
 
 TEST_CASE_1_4_5_OUTPUT = """
 hosts:
@@ -101,6 +103,9 @@ loglevel: 4
 log_file_path: ffff/file/path/tmp.log
 log_rotate_count: 1
 """
+
+
+TEST_CASE_8_OUTPUT = 'log_file_path: /file/path/tmp.log'
 
 
 def test_process_file_without_env(tmpdir):
@@ -192,6 +197,6 @@ def test_process_file_with_incorrect_fstring_syntax_2(tmpdir):
 
 
 def test_process_string():
-    output = process_string(TEST_CASE_1_2_INPUT)
+    output = process_string(TEST_CASE_8_INPUT)
 
-    assert output == TEST_CASE_1_4_5_OUTPUT
+    assert output == TEST_CASE_8_OUTPUT

@@ -8,6 +8,8 @@ import sys
 FSTRING_PATTERN = """f\"[^\"]+\""""
 ENV_PATTERN = """({[^}{]+})+"""
 
+BACKUP_EXTENSION = '.bak'
+
 
 def process_string(string):
     """
@@ -16,9 +18,9 @@ def process_string(string):
     """
 
     def write_function(line, container):
-        container = line
+        return line
 
-    return _process(string, write_function)
+    return _process([string], write_function)
 
 
 def process_file(file):
@@ -35,9 +37,10 @@ def process_file(file):
     """
     def write_function(line, container):
         sys.stdout.write(line)
+        return container
 
     try:
-        with fileinput.FileInput(file, inplace=True, backup='.bak') as file:
+        with fileinput.FileInput(file, inplace=True, backup=BACKUP_EXTENSION) as file:
             _process(file, write_function)
     except Exception as e:
         if isinstance(file, fileinput.FileInput):
@@ -75,17 +78,31 @@ def _process(strings_container, write):
                     fstring_buffer = re.sub(pstring, processed_data, fstring_buffer)
 
                 parsed_line = re.sub(fstring, fstring_buffer[2:-1], parsed_line)
-            write(parsed_line, strings_container)
+            strings_container = write(parsed_line, strings_container)
         else:
-            write(line, strings_container)
+            strings_container = write(line, strings_container)
     return strings_container
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='My awesome script')
-    parser.add_argument(
-        "-c", "--conf", action="store", dest="conf_file",
-        help="Path to config file"
-    )
+    parser = argparse.ArgumentParser(description='Parse static files such as YAML and insert'
+                                                 ' in them data from environment variables')
+    parser.add_argument('-f', '--file', action='store', dest='file', help='Path to config file')
+    parser.add_argument('-s', '--string', action='store', dest='string', help='Path to config file')
     args = parser.parse_args()
-    process_file(path=args.conf_file)
+
+    if not args.file and not args.string:
+        raise ValueError('You should specify file or string')
+
+    if args.file:
+        process_file(args.file)
+        try:
+            os.remove(f'{args.file}{BACKUP_EXTENSION}')
+        except OSError:
+            pass
+        sys.exit(0)
+
+    if args.string:
+        output = process_string(args.string)
+        print(output)
+        sys.exit(0)
