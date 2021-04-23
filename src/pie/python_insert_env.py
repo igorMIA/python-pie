@@ -43,7 +43,10 @@ def process_file(input_file, to_file=None, keep_input_file=True):
     # if catch exception, we want to restore original data from the backup file
     except Exception as e:
         file = Path(f.filename())
-        file.unlink(missing_ok=True)
+        try:
+            file.unlink()
+        except FileNotFoundError:
+            pass
         os.rename(f'{file}{BACKUP_EXTENSION}', file)
 
         if isinstance(e, ValueError):
@@ -51,7 +54,10 @@ def process_file(input_file, to_file=None, keep_input_file=True):
     finally:
         file = Path(f.filename())
         backup_file = Path(f'{file}{BACKUP_EXTENSION}')
-        backup_file.unlink(missing_ok=True)
+        try:
+            backup_file.unlink()
+        except FileNotFoundError:
+            pass
 
         if to_file:
             if keep_input_file:
