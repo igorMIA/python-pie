@@ -15,7 +15,7 @@ BACKUP_EXTENSION = '.bak'
 
 def process_string(string):
     """
-    :param string
+    :param string: string to parse e.g.: 'log_file_path: f"/file/path/{log_file_path or 'tmp.log'}"'
     :return:
     """
 
@@ -54,16 +54,18 @@ def process_file(input_file, to_file=None, keep_input_file=True):
     finally:
         file = Path(f.filename())
         backup_file = Path(f'{file}{BACKUP_EXTENSION}')
-        try:
-            backup_file.unlink()
-        except FileNotFoundError:
-            pass
 
         if to_file:
             if keep_input_file:
                 copyfile(file, Path(file.parent, to_file))
+                copyfile(backup_file, file)
             else:
                 file.rename(Path(file.parent, to_file))
+
+        try:
+            backup_file.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def _process(strings_container, write):
