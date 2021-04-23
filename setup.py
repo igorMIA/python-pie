@@ -19,7 +19,10 @@ setuptools.setup(
     keywords=['environment variables', 'deployments', 'settings', 'env', 'configurations', 'python', 'pie'],
     url="https://github.com/igorMIA/python-pie",
     classifiers=[
-        "Programming Language :: Python :: 3",
+        'Development Status :: 4 - Beta',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: BSD License',
@@ -29,5 +32,5 @@ setuptools.setup(
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
-    python_requires=">=3.6",
+    python_requires=">=3.7",
 )
