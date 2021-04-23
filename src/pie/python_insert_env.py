@@ -3,6 +3,8 @@ import fileinput
 import re
 import os
 import sys
+from pathlib import Path
+from shutil import copyfile
 
 
 FSTRING_PATTERN = """f\"[^\"]+\""""
@@ -13,7 +15,7 @@ BACKUP_EXTENSION = '.bak'
 
 def process_string(string):
     """
-
+    :param string
     :return:
     """
 
@@ -23,16 +25,11 @@ def process_string(string):
     return _process([string], write_function)
 
 
-def process_file(file):
+def process_file(input_file, to_file=None, keep_input_file=True):
     """
-    E.g:
-    logging:
-        log_file_path: f"/file/path/{log_file_path or 'tmp.log'}"
-
-    logging:
-        log_file_path: /file/path/x54.log.txt
-
-    :param file:
+    :param input_file: path to file that should be processed
+    :param to_file: optional, a path to file that should be created from input_file
+    :param keep_input_file: keep original input file, in case to_file parameter provided
     :return:
     """
     def write_function(line, container):
@@ -40,16 +37,27 @@ def process_file(file):
         return container
 
     try:
-        with fileinput.FileInput(file, inplace=True, backup=BACKUP_EXTENSION) as file:
-            _process(file, write_function)
+        with fileinput.FileInput(input_file, inplace=True, backup=BACKUP_EXTENSION) as f:
+            _process(f, write_function)
+
+    # if catch exception, we want to restore original data from the backup file
     except Exception as e:
-        if isinstance(file, fileinput.FileInput):
-            file = file.filename()
-        os.remove(file)
-        os.rename(f'{file}.bak', file)
+        file = Path(f.filename())
+        file.unlink(missing_ok=True)
+        os.rename(f'{file}{BACKUP_EXTENSION}', file)
 
         if isinstance(e, ValueError):
             raise
+    finally:
+        file = Path(f.filename())
+        backup_file = Path(f'{file}{BACKUP_EXTENSION}')
+        backup_file.unlink(missing_ok=True)
+
+        if to_file:
+            if keep_input_file:
+                copyfile(file, Path(file.parent, to_file))
+            else:
+                file.rename(Path(file.parent, to_file))
 
 
 def _process(strings_container, write):
@@ -96,10 +104,6 @@ if __name__ == '__main__':
 
     if args.file:
         process_file(args.file)
-        try:
-            os.remove(f'{args.file}{BACKUP_EXTENSION}')
-        except OSError:
-            pass
         sys.exit(0)
 
     if args.string:

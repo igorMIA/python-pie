@@ -2,8 +2,9 @@
 
 [![Build Status](https://github.com/igorMIA/python-pie/actions/workflows/tests.yaml/badge.svg)](https://github.com/igorMIA/python-pie/actions/workflows/tests.yaml)
 [![PyPI version](https://badge.fury.io/py/python-pie.svg)](https://badge.fury.io/py/python-pie)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/python-pie?style=plastic)
 
-Python-pie reads key-value pairs from a `.env` file and can set them as environment
+Python-pie(python insert env) reads key-value pairs from a `.env` file and can set them as environment
 variables. It helps in the development of applications following the
 
 ## Getting Started
