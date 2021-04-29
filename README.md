@@ -4,8 +4,12 @@
 [![PyPI version](https://badge.fury.io/py/python-pie.svg)](https://badge.fury.io/py/python-pie)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/python-pie?style=plastic)
 
-Python-pie(python insert env) reads key-value pairs from a `.env` file and can set them as environment
-variables. It helps in the development of applications following the
+Python-pie(python insert env) parses static files such as YAML and insert in them data from environment variables
+
+- [Getting Started](#getting-started)
+- [Syntax example](#syntax-example)
+- [Using as module from command line](#using-as-module-from-command-line)
+- [Docker example](#docker-example)
 
 ## Getting Started
 
@@ -34,7 +38,7 @@ or in case of absence take the default value
 
 ### Syntax example
 
-```
+```yaml
 hosts:
   - f"{host}"
 
@@ -45,11 +49,32 @@ log_rotate_count: 1
 
 after `process_file(filepath)`
 
-```
+```yaml
 hosts:
   - localohst
 
 loglevel: 4
 log_file_path: /file/path/tmp.log
 log_rotate_count: 1
+```
+
+### Using as module from command line
+
+You can use python-pie in command line.
+```shell
+python -m pie -f /node54/config.yml
+```
+
+Flags:
+
+- `-f --file` path to config file.
+- `-s --string` string to precess.
+
+### Docker example
+
+```shell
+docker create -t --name pie -i python:3.9 || true;
+docker start pie;
+docker exec pie python -m pip install python-pie;
+docker exec pie python -m pie -f /node54/config.yml;
 ```
