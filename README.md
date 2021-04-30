@@ -66,9 +66,14 @@ python -m pie -f /node54/config.yml
 ```
 
 Flags:
+*(you should provide at least one of those)*
 
 - `-f --file` path to config file.
 - `-s --string` string to precess.
+
+*optional*:
+- `-tf --to-file` path to output config file.
+- `--keep-file` if pie should keep original file without change.
 
 ### Docker example
 
