@@ -1,10 +1,7 @@
 import os
 import pytest
 from src.pie import process_file, process_string
-
-
-INPUT_FILE_NAME = 'input.txt'
-OUTPUT_FILE_NAME = 'output.txt'
+from tests.conftest import INPUT_FILE_NAME, OUTPUT_FILE_NAME
 
 
 TEST_CASE_1_2_9_11_12_INPUT = """
@@ -112,20 +109,35 @@ log_rotate_count: 1
 TEST_CASE_8_OUTPUT = 'log_file_path: /file/path/tmp.log'
 
 
-def test_process_file_without_env(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+TEST_CASE_ENV_FILE_INPUT = """
+hosts:
+  - "f"{host}""
+
+log_file_path: f"{var or 'env_not_found'}"
+log_rotate_count: f"{count}"
+"""
+
+
+TEST_CASE_ENV_FILE_OUTPUT = """
+hosts:
+  - "localhost"
+
+log_file_path: env_not_found
+log_rotate_count: 10
+"""
+
+
+def test_process_file_without_env(input_file):
     input_file.write(TEST_CASE_1_2_9_11_12_INPUT)
 
     process_file(input_file)
 
     content = input_file.read()
-    input_file.remove()
 
     assert content == TEST_CASE_1_4_5_OUTPUT
 
 
-def test_process_file_with_env(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_with_env(input_file):
     input_file.write(TEST_CASE_1_2_9_11_12_INPUT)
 
     os.environ['log_file_path'] = 'env_file.tmp'
@@ -134,35 +146,28 @@ def test_process_file_with_env(tmpdir):
 
     content = input_file.read()
     del os.environ['log_file_path']
-    input_file.remove()
 
     assert content == TEST_CASE_2_OUTPUT
 
 
-def test_process_file_without_env_should_raise_error(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_without_env_should_raise_error(input_file):
     input_file.write(TEST_CASE_3_10_INPUT)
 
     with pytest.raises(ValueError):
         process_file(input_file)
 
-    input_file.remove()
 
-
-def test_process_file_with_multiple_fstrings(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_with_multiple_fstrings(input_file):
     input_file.write(TEST_CASE_4_INPUT)
 
     process_file(input_file)
 
     content = input_file.read()
-    input_file.remove()
 
     assert content == TEST_CASE_1_4_5_OUTPUT
 
 
-def test_process_file_with_multiple_fstrings_on_different_strings(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_with_multiple_fstrings_on_different_strings(input_file):
     input_file.write(TEST_CASE_5_INPUT)
 
     os.environ['host'] = 'localhost'
@@ -171,31 +176,26 @@ def test_process_file_with_multiple_fstrings_on_different_strings(tmpdir):
 
     content = input_file.read()
     del os.environ['host']
-    input_file.remove()
 
     assert content == TEST_CASE_1_4_5_OUTPUT
 
 
-def test_process_file_with_incorrect_fstring_syntax_1(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_with_incorrect_fstring_syntax_1(input_file):
     input_file.write(TEST_CASE_6_INPUT)
 
     process_file(input_file)
 
     content = input_file.read()
-    input_file.remove()
 
     assert content == TEST_CASE_6_OUTPUT
 
 
-def test_process_file_with_incorrect_fstring_syntax_2(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_with_incorrect_fstring_syntax_2(input_file):
     input_file.write(TEST_CASE_7_INPUT)
 
     process_file(input_file)
 
     content = input_file.read()
-    input_file.remove()
 
     assert content == TEST_CASE_7_OUTPUT
 
@@ -206,31 +206,26 @@ def test_process_string():
     assert output == TEST_CASE_8_OUTPUT
 
 
-def test_process_file_backup_file_deletion(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_backup_file_deletion(input_file):
     input_file.write(TEST_CASE_1_2_9_11_12_INPUT)
 
     process_file(input_file)
 
     assert os.listdir(input_file.dirname) == [INPUT_FILE_NAME]
-    input_file.remove()
 
 
-def test_process_file_backup_if_exception_raised(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_backup_if_exception_raised(input_file):
     input_file.write(TEST_CASE_3_10_INPUT)
 
     with pytest.raises(ValueError):
         process_file(input_file)
 
     content = input_file.read()
-    input_file.remove()
 
     assert content == TEST_CASE_3_10_INPUT
 
 
-def test_process_file_with_rename_should_not_remove_original_file(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_with_rename_should_not_remove_original_file(input_file):
     input_file.write(TEST_CASE_1_2_9_11_12_INPUT)
 
     process_file(input_file, OUTPUT_FILE_NAME)
@@ -241,10 +236,25 @@ def test_process_file_with_rename_should_not_remove_original_file(tmpdir):
     assert os.listdir(input_file.dirname) == [INPUT_FILE_NAME, OUTPUT_FILE_NAME]
 
 
-def test_process_file_with_rename_should_remove_original_file(tmpdir):
-    input_file = tmpdir.mkdir('tmp').join(INPUT_FILE_NAME)
+def test_process_file_with_rename_should_remove_original_file(input_file):
     input_file.write(TEST_CASE_1_2_9_11_12_INPUT)
 
     process_file(input_file, OUTPUT_FILE_NAME, keep_input_file=False)
 
     assert os.listdir(input_file.dirname) == [OUTPUT_FILE_NAME]
+
+
+def test_process_file_with_envs_from_file(input_file, env_file):
+    input_file.write(TEST_CASE_ENV_FILE_INPUT)
+
+    process_file(input_file, env_file=env_file)
+
+    content = input_file.read()
+
+    assert content == TEST_CASE_ENV_FILE_OUTPUT
+
+
+def test_process_string_with_envs_from_file(env_file):
+    output = process_string(TEST_CASE_ENV_FILE_INPUT, env_file=env_file)
+
+    assert output == TEST_CASE_ENV_FILE_OUTPUT
