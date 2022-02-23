@@ -233,7 +233,7 @@ def test_process_file_with_rename_should_not_remove_original_file(input_file):
     content = input_file.read()
     assert content == TEST_CASE_1_2_9_11_12_INPUT
 
-    assert os.listdir(input_file.dirname) == [INPUT_FILE_NAME, OUTPUT_FILE_NAME]
+    assert set(os.listdir(input_file.dirname)) == {INPUT_FILE_NAME, OUTPUT_FILE_NAME}
 
 
 def test_process_file_with_rename_should_remove_original_file(input_file):
