@@ -10,6 +10,7 @@ Python-pie(python insert env) parses static files such as YAML and insert in the
 - [Syntax example](#syntax-example)
 - [Using as module from command line](#using-as-module-from-command-line)
 - [Docker example](#docker-example)
+- [Run tests](#run-tests)
 
 ## Getting Started
 
@@ -82,4 +83,20 @@ docker create -t --name pie -i python:3.9 || true;
 docker start pie;
 docker exec pie python -m pip install python-pie;
 docker exec pie python -m pie -f /node54/config.yml;
+```
+
+during build:
+
+```shell
+FROM python:3.9-alpine AS builder
+RUN pip install python-pie
+RUN python -m pie -f /tmp/template.yml -tf /app/config.yml -e .env
+```
+
+### Run tests
+
+To run tests install `pytest` library and run the command: 
+
+```shell
+pytest tests/
 ```

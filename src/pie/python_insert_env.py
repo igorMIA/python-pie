@@ -5,18 +5,20 @@ import sys
 from pathlib import Path
 from shutil import copyfile
 
-
 FSTRING_PATTERN = """f\"[^\"]+\""""
 ENV_PATTERN = """({[^}{]+})+"""
 
 BACKUP_EXTENSION = '.bak'
 
 
-def process_string(string):
+def process_string(string: str, env_file: str = None):
     """
     :param string: string to parse e.g.: 'log_file_path: f"/file/path/{log_file_path or 'tmp.log'}"'
+    :param env_file: optional, path to environment file
     :return:
     """
+    if env_file:
+        _load_envs_from_file(env_file)
 
     def write_function(line, container):
         return line
@@ -24,13 +26,17 @@ def process_string(string):
     return _process([string], write_function)
 
 
-def process_file(input_file, to_file=None, keep_input_file=True):
+def process_file(input_file: str, to_file: str = None, keep_input_file: bool = True, env_file: str = None):
     """
     :param input_file: path to file that should be processed
     :param to_file: optional, a path to file that should be created from input_file
     :param keep_input_file: keep original input file, in case to_file parameter provided
+    :param env_file: optional, path to environment file
     :return:
     """
+    if env_file:
+        _load_envs_from_file(env_file)
+
     def write_function(line, container):
         sys.stdout.write(line)
         return container
@@ -97,3 +103,13 @@ def _process(strings_container, write):
         else:
             strings_container = write(line, strings_container)
     return strings_container
+
+
+def _load_envs_from_file(filename):
+    with open(filename) as f:
+        for line in f:
+            if line.startswith('#') or not line.strip():
+                continue
+
+            key, value = line.strip().split('=', 1)
+            os.environ[key] = value  # Load to local environ
